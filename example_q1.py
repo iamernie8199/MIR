@@ -88,7 +88,7 @@ if DB == 'GTZAN':
         # TODO: Calculate the accuracy for each genre
         # Hint: Use label[g] and pred[g]
         ##################################################
-        acc = len([i for i, j in zip(label[g], pred[g]) if i == j]) / len(label[g])
+        acc = accuracy_score(label[g], pred[g])
         print("{:9s}\t{:8.2f}%".format(g, acc))
         label_list += label[g]
         pred_list += pred[g]
@@ -100,6 +100,6 @@ else:
 # TODO: Calculate the accuracy for all file.
 # Hint1: Use label_list and pred_list.
 ##################################################
-acc_all = len([i for i, j in zip(label_list, pred_list) if i == j]) / len(label_list)
+acc_all = accuracy_score(label_list, pred_list)
 print("----------")
 print("Overall accuracy:\t{:.2f}%".format(acc_all))
