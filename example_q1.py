@@ -22,6 +22,7 @@ import utils  # self-defined utils.py file
 pitches = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 DB = 'GTZAN'
+#DB = 'giantsteps'
 if DB == 'GTZAN':  # dataset with genre label classify at parent directory
     FILES = glob(DB + '/wav/*/*.wav')
 else:
@@ -40,14 +41,20 @@ chromagram = list()
 gens = list()
 for f in FILES:
     f = f.replace('\\', '/')
-    content = utils.read_keyfile(f, '*.lerch.txt')
-    if (int(content) < 0): continue  # skip saving if key not found
+    if DB == 'GTZAN':
+        content = utils.read_keyfile(f, '*.lerch.txt')
+    else:
+        content = utils.read_keyfile(f, '*.key')
+    if DB == 'GTZAN':
+        if (int(content) < 0): continue  # skip saving if key not found
+    else:
+        if (len(content) < 1): continue
     if DB == 'GTZAN':
         gen = f.split('/')[2]
         label[gen].append(utils.LABEL[int(content)])
         gens.append(gen)
     else:
-        label.append(utils.LABEL[content])
+        label.append(content)
 
     sr, y = utils.read_wav(f)
     ##########
@@ -76,7 +83,7 @@ for f in FILES:
     if DB == 'GTZAN':
         pred[gen].append(mode)
     else:
-        pred.append('?')  # you may ignore this when starting with GTZAN dataset
+        pred.append(mode)  # you may ignore this when starting with GTZAN dataset
 ##########
 
 print("***** Q1 *****")
@@ -92,6 +99,7 @@ if DB == 'GTZAN':
         print("{:9s}\t{:8.2f}%".format(g, acc))
         label_list += label[g]
         pred_list += pred[g]
+    print("----------")
 else:
     label_list = label
     pred_list = pred
@@ -101,5 +109,4 @@ else:
 # Hint1: Use label_list and pred_list.
 ##################################################
 acc_all = accuracy_score(label_list, pred_list)
-print("----------")
 print("Overall accuracy:\t{:.2f}%".format(acc_all))
