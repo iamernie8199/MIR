@@ -1,7 +1,6 @@
 from glob import glob
 from collections import defaultdict
 import librosa
-import librosa.display
 import numpy as np
 
 
