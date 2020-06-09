@@ -2,7 +2,6 @@ from tqdm import tqdm
 from numba import jit
 import librosa
 from glob import glob
-from collections import defaultdict
 import numpy as np
 from mir_eval.beat import f_measure
 
