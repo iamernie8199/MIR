@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 from madmom.features.beats import RNNBeatProcessor
 from madmom.features.tempo import TempoEstimationProcessor
+from tqdm import tqdm
 
 
 def tt(T, G):
@@ -22,7 +23,7 @@ GENRE = [g.replace('\\', '/').split('/')[2] for g in glob(db + '/wav/*')]
 hop_length = 512  # (ms)
 gens = list()
 P, ALOTC = defaultdict(list), defaultdict(list)
-for f in FILES:
+for f in tqdm(FILES):
     tempi = list()
     content = open(f.replace('/wav/', '/key_tempo/').replace('.wav', '.bpm'), 'r').read().strip()
     beat = open(f.replace('/wav/', '/key_beat/').replace('.wav', '.beats'), 'r').read().split('\n')
@@ -42,7 +43,7 @@ for f in FILES:
 
     T1 = tempi[0][0]
     T2 = tempi[1][0]
-    saliency = tempi[0][1] / (tempi[0][1] + tempi[1][1])
+    saliency = (tempi[0][1] - tempi[-1][1]) / (tempi[0][1] + tempi[-1][1])
     p_score = saliency * tt(T1, g) + (1 - saliency) * tt(T2, g)
     ALOTC_score = 1 if tt(T1, g) == 1 or tt(T2, g) == 1 else 0
 
