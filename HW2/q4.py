@@ -36,7 +36,6 @@ for g in GENRE:
     acc = sum(F[g]) / len(F[g])
     print("{:9s}\t{:8.2f}".format(g, acc))
     F_list += F[g]
-print("\n")
 acc_F_all = sum(F_list) / len(F_list)
 print("----------")
 print("Overall F-scores:\t{:.2f}".format(acc_F_all))
