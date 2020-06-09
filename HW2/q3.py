@@ -4,13 +4,20 @@ import numpy as np
 from madmom.features.beats import RNNBeatProcessor
 from madmom.features.tempo import TempoEstimationProcessor
 from tqdm import tqdm
+from numba import jit
 
 
+@jit
 def tt(T, G):
     if np.abs((G - T) / G) > 0.08:
         return 0
     else:
         return 1
+
+
+@jit
+def ground_truth(b):
+    return np.mean(60 / np.diff(b))
 
 
 db = 'Ballroom'
@@ -35,7 +42,7 @@ for f in tqdm(FILES):
         beat = [float(b.split(' ')[0]) for b in beat]
     gen = f.split('/')[2]
     gens.append(gen)
-    g = np.mean(60 / np.diff(beat))
+    g = ground_truth(beat)
 
     proc = TempoEstimationProcessor(fps=100)
     act = RNNBeatProcessor()(f)
@@ -43,7 +50,7 @@ for f in tqdm(FILES):
 
     T1 = tempi[0][0]
     T2 = tempi[1][0]
-    saliency = (tempi[0][1] - tempi[-1][1]) / (tempi[0][1] + tempi[-1][1])
+    saliency = tempi[0][1] / (tempi[0][1] + tempi[1][1])
     p_score = saliency * tt(T1, g) + (1 - saliency) * tt(T2, g)
     ALOTC_score = 1 if tt(T1, g) == 1 or tt(T2, g) == 1 else 0
 
