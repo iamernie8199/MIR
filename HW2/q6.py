@@ -35,6 +35,7 @@ for f in tqdm(FILES):
                                                                                     beat]
         gen = f.split('/')[2]
         gens.append(gen)
+        downbeat = np.array(downbeat)
     elif db == 'SMC_MIREX':
         beat = open(f, 'r').read().split('\n')
         if beat[-1] == '':
@@ -47,8 +48,8 @@ for f in tqdm(FILES):
         downbeat = [float(b.split()[0]) for b in beat if int(b.split()[1]) == 1]
         beat = [float(b.split('\t')[0]) for b in beat] if beat[0][-2] == '\t' else [float(b.split(' ')[0]) for b in
                                                                                     beat]
+        downbeat = np.array(downbeat)
     beat = np.array(beat)
-    downbeat = np.array(downbeat)
 
     proc1 = BeatDetectionProcessor(fps=100)
     if db == 'SMC_MIREX':
@@ -97,8 +98,8 @@ elif db == 'JCS':
 else:
     F_list = F_b
 acc_F_all = sum(F_list) / len(F_list)
-acc_F_all_db = sum(F_list_db) / len(F_list_db)
 print("----------")
 print("Overall F-scores:\t{:.2f}".format(acc_F_all))
 if db != 'SMC_MIREX':
+    acc_F_all_db = sum(F_list_db) / len(F_list_db)
     print("Overall F-scores for downbeat tracking:\t{:.2f}".format(acc_F_all_db))
