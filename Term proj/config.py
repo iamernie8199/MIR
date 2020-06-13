@@ -1,0 +1,4 @@
+config = {
+    'SPOTIPY_CLIENT_ID': '8ccf2050e5514bfd8b3cfed297b7668c',
+    'SPOTIPY_CLIENT_SECRET': '6ce406a4cd044031904f88d1fd6b17cd'
+}
