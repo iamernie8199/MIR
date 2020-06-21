@@ -1,21 +1,26 @@
 from tqdm import tqdm
 from glob import glob
 import librosa
+import librosa.display
 import pandas as pd
 import numpy as np
+from madmom.audio.signal import Signal
 from madmom.features.key import CNNKeyRecognitionProcessor, key_prediction_to_label
 from madmom.features.beats import RNNBeatProcessor
 from madmom.features.tempo import TempoEstimationProcessor
 
 FILES = glob('AIVA/*/*.wav')
+FILES += glob('Auxuman/*/*.wav')
+FILES += glob('Auxuman/*/*.mp3')
 FILES = [f.replace('\\', '/') for f in FILES]
-ALBUM = [g.replace('\\', '/').split('/')[1] for g in glob('AIVA/*')]
-df = pd.DataFrame(columns=['track', 'album', 'length', 'key', 'tempo'])
+df = pd.DataFrame(columns=['track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range', 'type'])
 
 for f in tqdm(FILES):
+    # f = FILES[0]
     y, sr = librosa.load(f)
+    sig = Signal(f)
     # length
-    l = librosa.core.get_duration(y=y, sr=sr)
+    l = librosa.get_duration(y, sr)
     z = librosa.feature.zero_crossing_rate(y)
     # key recognition
     proc = CNNKeyRecognitionProcessor()
@@ -23,11 +28,21 @@ for f in tqdm(FILES):
     # tempo
     proc = TempoEstimationProcessor(fps=100)
     tempi = proc(RNNBeatProcessor()(f))
-    t = tempi[0][0]
+    t = tempi[0][0] if tempi[0][1] - tempi[1][1] > 0.1 else max(tempi[0][0], tempi[1][0])
+    # loudness
+    S = librosa.stft(y) ** 2
+    power = np.abs(S) ** 2
+    p_mean = np.sum(power, axis=0, keepdims=True)
+    p_ref = np.max(power)
+    loudness = librosa.power_to_db(p_mean, ref=p_ref)
+
     df = df.append([{
         'track': f.split('/')[-1].split('.wav')[0],
         'album': f.split('/')[1],
         'length': l,
         'key': k,
-        'tempo': t
+        'tempo': t,
+        'loudness': loudness.mean(),
+        'dynamic_range': loudness.max() - loudness.min(),
+        'type': 'AI' if f.split('/')[0] == 'AIVA' or f.split('/')[0] == 'Auxuman' else 'human'
     }], ignore_index=True)
