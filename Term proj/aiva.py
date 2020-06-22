@@ -24,7 +24,7 @@ vocal = ['ANIMA', 'French Kiwi Juice', 'In Rainbows']
 
 df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
-    'volume', 'energy', 'zero_crossing_rate','type', 'by'
+    'volume', 'energy', 'zero_crossing_rate','type', 'by', 'artist'
 ])
 # %%
 for f in tqdm(FILES):
@@ -73,9 +73,9 @@ for f in tqdm(FILES):
         'energy': e,
         'zero_crossing_rate': z,
         'type': type0,
-        'by': 'human' if f.split('/')[0] == 'else' else 'AI'
-    }],
-                   ignore_index=True)
+        'by': 'human' if f.split('/')[0] == 'else' else 'AI',
+        'artist': f.split('/')[0] if f.split('/')[0] != 'else' else 'else'
+    }],ignore_index=True)
 
 df.to_csv('data.csv', index=0)
 
