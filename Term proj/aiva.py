@@ -1,3 +1,4 @@
+# %%
 from tqdm import tqdm
 from glob import glob
 import librosa
@@ -22,7 +23,7 @@ df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
     'volume', 'energy', 'type'
 ])
-
+# %%
 for f in tqdm(FILES):
     # f = FILES[0]
     y, sr = librosa.load(f)
