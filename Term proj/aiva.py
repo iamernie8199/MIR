@@ -19,9 +19,11 @@ FILES += glob('Yating/*/*.mp3')
 FILES += glob('else/*/*.wav')
 FILES = [f.replace('\\', '/') for f in FILES]
 
+vocal = ['ANIMA', 'French Kiwi Juice']
+
 df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
-    'volume', 'energy', 'type'
+    'volume', 'energy', 'type', 'by'
 ])
 # %%
 for f in tqdm(FILES):
@@ -52,7 +54,12 @@ for f in tqdm(FILES):
         librosa.feature.rms(y, frame_length=1024, hop_length=512,
                             center=False))
     e = np.mean(np.sum(frame**2, axis=0))
-
+    if f.split('/')[0] == 'Auxuman' or f.split('/')[1] in vocal:
+        type0 = 'vocal'
+    elif f.split('/')[1] == '艾娲 (Vol. 3 from artificial composer Aiva)':
+        type0 = 'china'
+    else:
+        type0 = 'instrument'
     df = df.append([{
         'track': f.split('/')[-1].split('.wav')[0],
         'album': f.split('/')[1],
@@ -63,7 +70,8 @@ for f in tqdm(FILES):
         'dynamic_range': loudness.max() - loudness.min(),
         'volume': v,
         'energy': e,
-        'type': 'human' if f.split('/')[0] == 'else' else 'AI'
+        'type': type0,
+        'by': 'human' if f.split('/')[0] == 'else' else 'AI'
     }],
                    ignore_index=True)
 
