@@ -16,8 +16,12 @@ def stat(x):
         '均值', '方差', '標準差', '偏度', '峰度', 'IQR'
     ])
 
+def violin(df, x, y, t):
+    ax = sns.violinplot(x=x, y=y, data=df).set_title(t)
+    plt.show()
 
 if __name__ == "__main__":
     data = pd.read_csv("data.csv")
-    ax = sns.violinplot(x="album",y="length", data=data).set_title("Length(ms)")
+    violin(data, "album", "length", "Length(ms)")
+    ax = sns.violinplot(x=data["tempo"]).set_title('tempo')
     plt.show()
