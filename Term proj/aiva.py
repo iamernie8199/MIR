@@ -65,3 +65,6 @@ for f in tqdm(FILES):
     }], ignore_index=True)
 
 df.to_csv('data.csv', index=0)
+
+
+# %%
