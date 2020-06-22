@@ -17,9 +17,10 @@ FILES += glob('Auxuman/*/*.mp3')
 FILES += glob('Yating/*/*.mp3')
 # human
 FILES += glob('else/*/*.wav')
+FILES += glob('else/*/*.mp3')
 FILES = [f.replace('\\', '/') for f in FILES]
 
-vocal = ['ANIMA', 'French Kiwi Juice']
+vocal = ['ANIMA', 'French Kiwi Juice', 'In Rainbows']
 
 df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
