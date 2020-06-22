@@ -48,7 +48,7 @@ for f in tqdm(FILES):
     p_ref = np.max(power)
     loudness = librosa.power_to_db(p_mean, ref=p_ref)
     # Volumns and energy
-    v = librosa.feature.rms(y, frame_length=1024, hop_length=512, center=False)
+    v = np.mean(librosa.feature.rms(y, frame_length=1024, hop_length=512, center=False), axis=0)
     e = np.sum(frame**2, axis=0)
 
     df = df.append([{
@@ -61,7 +61,7 @@ for f in tqdm(FILES):
         'dynamic_range': loudness.max() - loudness.min(),
         'volume': v,
         'energy': e,
-        'type': 'human' if f.split('/')[0] != 'else' else 'AI'
+        'type': 'human' if f.split('/')[0] == 'else' else 'AI'
     }], ignore_index=True)
 
 df.to_csv('data.csv', index=0)
