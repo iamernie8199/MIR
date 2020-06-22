@@ -61,5 +61,6 @@ for f in tqdm(FILES):
         'volume': v,
         'energy': e,
         'type': 'human' if f.split('/')[0] != 'else' else 'AI'
-    }],
-                   ignore_index=True)
+    }], ignore_index=True)
+
+df.to_csv('data.csv', index=0)
