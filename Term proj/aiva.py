@@ -12,6 +12,7 @@ from madmom.features.tempo import TempoEstimationProcessor
 FILES = glob('AIVA/*/*.wav')
 FILES += glob('Auxuman/*/*.wav')
 FILES += glob('Auxuman/*/*.mp3')
+FILES += glob('Yating/*/*.mp3')
 FILES = [f.replace('\\', '/') for f in FILES]
 df = pd.DataFrame(columns=['track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range', 'type'])
 
@@ -21,6 +22,7 @@ for f in tqdm(FILES):
     sig = Signal(f)
     # length
     l = librosa.get_duration(y, sr)
+    # zcr
     z = librosa.feature.zero_crossing_rate(y)
     # key recognition
     proc = CNNKeyRecognitionProcessor()
@@ -44,5 +46,5 @@ for f in tqdm(FILES):
         'tempo': t,
         'loudness': loudness.mean(),
         'dynamic_range': loudness.max() - loudness.min(),
-        'type': 'AI' if f.split('/')[0] == 'AIVA' or f.split('/')[0] == 'Auxuman' else 'human'
+        'type': 'human' if f.split('/')[0] != 'else' else 'AI'
     }], ignore_index=True)
