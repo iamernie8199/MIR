@@ -48,8 +48,8 @@ for f in tqdm(FILES):
     p_ref = np.max(power)
     loudness = librosa.power_to_db(p_mean, ref=p_ref)
     # Volumns and energy
-    v = np.mean(librosa.feature.rms(y, frame_length=1024, hop_length=512, center=False), axis=0)
-    e = np.sum(frame**2, axis=0)
+    v = np.mean(librosa.feature.rms(y, frame_length=1024, hop_length=512, center=False))
+    e = np.mean(np.sum(frame**2, axis=0))
 
     df = df.append([{
         'track': f.split('/')[-1].split('.wav')[0],
