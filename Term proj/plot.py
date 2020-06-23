@@ -22,6 +22,6 @@ def violin(df, x, y, t):
 
 if __name__ == "__main__":
     data = pd.read_csv("data.csv")
-    violin(data, "album", "length", "Length(ms)")
+    violin(data, "artist", "length", "Length(ms)")
     ax = sns.violinplot(x=data["tempo"]).set_title('tempo')
     plt.show()
