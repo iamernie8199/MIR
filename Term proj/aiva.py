@@ -17,13 +17,11 @@ def normalize(x, axis=0):
 
 
 # AI
-FILES = glob('AIVA/*/*.wav')
-FILES += glob('Auxuman/*/*.wav')
-FILES += glob('Auxuman/*/*.mp3')
-FILES += glob('Yating/*/*.mp3')
+FILES = glob('AI/*/*/*.wav')
+FILES += glob('AI/*/*/*.mp3')
 # human
-FILES += glob('else/*/*.wav')
-FILES += glob('else/*/*.mp3')
+FILES += glob('human/*/*/*.wav')
+FILES += glob('human/*/*/*.mp3')
 FILES = [f.replace('\\', '/') for f in FILES]
 
 vocal = ['ANIMA', 'French Kiwi Juice', 'In Rainbows', 'A Moon Shaped Pool']
@@ -67,8 +65,7 @@ k = key_prediction_to_label(proc(f))
 # tempo
 proc = TempoEstimationProcessor(fps=100)
 tempi = proc(RNNBeatProcessor()(f))
-t = tempi[0][0] if tempi[0][1] - tempi[1][1] > 0.1 else max(
-    tempi[0][0], tempi[1][0])
+t = tempi[0][0] if tempi[0][1] - tempi[1][1] > 0.1 else max(tempi[0][0], tempi[1][0])
 # loudness
 S = librosa.stft(y) ** 2
 power = np.abs(S) ** 2
@@ -80,15 +77,16 @@ v = np.mean(
     librosa.feature.rms(y, frame_length=1024, hop_length=512,
                         center=False))
 e = np.mean(np.sum(frame ** 2, axis=0))
-if f.split('/')[0] == 'Auxuman' or f.split('/')[1] in vocal:
+if f.split('/')[1] == 'Auxuman' or f.split('/')[2] in vocal:
     type0 = 'vocal'
-elif f.split('/')[1] == '艾娲 (Vol. 3 from artificial composer Aiva)':
+elif f.split('/')[2] == '艾娲 (Vol. 3 from artificial composer Aiva)':
     type0 = 'china'
 else:
     type0 = 'instrument'
+# 將list轉成str儲存
 df = df.append([{
     'track': f.split('/')[-1].split('.wav')[0],
-    'album': f.split('/')[1],
+    'album': f.split('/')[2],
     'length': length,
     'key': k,
     'tempo': t,
@@ -96,15 +94,15 @@ df = df.append([{
     'dynamic_range': loudness.max() - loudness.min(),
     'volume': v,
     'energy': e,
-    'zero_crossing_rate': z,
+    'zero_crossing_rate': '/'.join(str(e) for e in z),
     'zero_crossing_rate_var': z_v,
-    'spectral_centroid': sc,
+    'spectral_centroid': '/'.join(str(e) for e in sc),
     'spectral_centroid_var': sc_v,
-    'spectral_rolloff': rolloff,
+    'spectral_rolloff': '/'.join(str(e) for e in rolloff),
     'spectral_rolloff_var': rolloff_v,
     'type': type0,
-    'by': 'human' if f.split('/')[0] == 'else' else 'AI',
-    'artist': f.split('/')[0] if f.split('/')[0] != 'else' else 'else'
+    'by': f.split('/')[0],
+    'artist': f.split('/')[1]
 }], ignore_index=True)
 
 # df.to_csv('data.csv', index=0)
