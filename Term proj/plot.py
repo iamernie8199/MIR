@@ -20,8 +20,15 @@ def violin(df, x, y, t):
     ax = sns.violinplot(x=x, y=y, data=df).set_title(t)
     plt.show()
 
+def convert(df):
+    df['zero_crossing_rate'] = df['zero_crossing_rate'].apply(lambda x: [float(e) for e in x.split('/')])
+    df['spectral_centroid'] = df['spectral_centroid'].apply(lambda x: [float(e) for e in x.split('/')])
+    df['spectral_rolloff'] = df['spectral_rolloff'].apply(lambda x: [float(e) for e in x.split('/')])
+    return df
+
 if __name__ == "__main__":
     data = pd.read_csv("data.csv")
+    data = convert(data)
     violin(data, "artist", "length", "Length(ms)")
     ax = sns.violinplot(x=data["tempo"]).set_title('tempo')
     plt.show()
