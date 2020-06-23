@@ -30,7 +30,9 @@ vocal = ['ANIMA', 'French Kiwi Juice', 'In Rainbows', 'A Moon Shaped Pool']
 
 df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
-    'volume', 'energy', 'zero_crossing_rate', 'spectral_centroid', 'spectral_rolloff', 'type', 'by', 'artist'
+    'volume', 'energy', 'zero_crossing_rate', 'spectral_centroid', 'spectral_rolloff',
+    'zero_crossing_rate_var', 'spectral_centroid_var', 'spectral_rolloff_var',
+    'type', 'by', 'artist'
 ])
 df['zero_crossing_rate'] = df['zero_crossing_rate'].astype('object')
 # %%
@@ -55,6 +57,10 @@ sc = normalize(sc)
 rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, n_fft=1024, hop_length=512, center=False, roll_percent=0.9)[0]
 rolloff_v = np.var(rolloff)
 rolloff = normalize(rolloff)
+# chroma
+chroma_stft = librosa.feature.chroma_stft(y=y, sr=sr)
+# mfcc
+mfcc = librosa.feature.mfcc(y=y, sr=sr)
 # key recognition
 proc = CNNKeyRecognitionProcessor()
 k = key_prediction_to_label(proc(f))
@@ -91,8 +97,11 @@ df = df.append([{
     'volume': v,
     'energy': e,
     'zero_crossing_rate': z,
+    'zero_crossing_rate_var': z_v,
     'spectral_centroid': sc,
+    'spectral_centroid_var': sc_v,
     'spectral_rolloff': rolloff,
+    'spectral_rolloff_var': rolloff_v,
     'type': type0,
     'by': 'human' if f.split('/')[0] == 'else' else 'AI',
     'artist': f.split('/')[0] if f.split('/')[0] != 'else' else 'else'
