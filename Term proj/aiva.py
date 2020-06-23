@@ -26,6 +26,7 @@ df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range',
     'volume', 'energy', 'zero_crossing_rate','type', 'by', 'artist'
 ])
+df['zero_crossing_rate'] = df['zero_crossing_rate'].astype('object')
 # %%
 for f in tqdm(FILES):
     # f = FILES[0]
@@ -35,7 +36,7 @@ for f in tqdm(FILES):
     # length
     length = librosa.get_duration(y, sr)
     # zcr
-    z = librosa.feature.zero_crossing_rate(y)
+    z = librosa.feature.zero_crossing_rate(y)[0]
     # key recognition
     proc = CNNKeyRecognitionProcessor()
     k = key_prediction_to_label(proc(f))
