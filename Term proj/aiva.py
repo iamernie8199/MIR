@@ -10,6 +10,9 @@ from madmom.audio.signal import Signal
 from madmom.features.key import CNNKeyRecognitionProcessor, key_prediction_to_label
 from madmom.features.beats import RNNBeatProcessor
 from madmom.features.tempo import TempoEstimationProcessor
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plot
 
 
 def normalize(x, axis=0):
@@ -37,7 +40,7 @@ df = pd.DataFrame(columns=[
 
 for f in tqdm(FILES):
 
-    #f = FILES[0]
+    # f = FILES[0]
     y, sr = librosa.load(f)
     sig = Signal(f)
     frame = librosa.util.frame(y, frame_length=1024, hop_length=512)
@@ -52,7 +55,8 @@ for f in tqdm(FILES):
     sc_v = np.var(z)
     sc = normalize(sc)
     # spectral rolloff
-    rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, n_fft=1024, hop_length=512, center=False, roll_percent=0.9)[0]
+    rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, n_fft=1024, hop_length=512, center=False, roll_percent=0.9)[
+        0]
     rolloff_v = np.var(rolloff)
     rolloff = normalize(rolloff)
     # chroma
@@ -77,7 +81,7 @@ for f in tqdm(FILES):
         librosa.feature.rms(y, frame_length=1024, hop_length=512,
                             center=False))
     e = np.mean(np.sum(frame ** 2, axis=0))
-    if f.split('/')[1] == 'Auxuman' or f.split('/')[2] in vocal:
+    if f.split('/')[1] == 'Auxuman' or f.split('/')[1] == 'Jukebox'or f.split('/')[2] in vocal :
         type0 = 'vocal'
     elif f.split('/')[2] == '艾娲 (Vol. 3 from artificial composer Aiva)':
         type0 = 'china'
@@ -94,11 +98,11 @@ for f in tqdm(FILES):
         'dynamic_range': loudness.max() - loudness.min(),
         'volume': v,
         'energy': e,
-        'zero_crossing_rate': '/'.join(str(e) for e in z),
+        'zero_crossing_rate': z,
         'zero_crossing_rate_var': z_v,
-        'spectral_centroid': '/'.join(str(e) for e in sc),
+        'spectral_centroid': sc,
         'spectral_centroid_var': sc_v,
-        'spectral_rolloff': '/'.join(str(e) for e in rolloff),
+        'spectral_rolloff': rolloff,
         'spectral_rolloff_var': rolloff_v,
         'type': type0,
         'by': f.split('/')[0],
@@ -106,3 +110,43 @@ for f in tqdm(FILES):
     }], ignore_index=True)
 
 df.to_csv('data.csv', index=0)
+data = df.copy()
+
+# length
+"""
+plot.violin(df[(df.artist != 'magenta')], "by", "length", "Length(ms)")
+ax = sns.violinplot(x=df[(df.artist != 'magenta') & (df.by == 'AI')]['length']).set_title('AI.all.Length(ms)')
+plt.show()
+plot.violin(df[(df.artist != 'magenta') & (df.by == 'AI')], "artist", "length", "AI.Length(ms)")
+plot.violin(df[(df.artist != 'magenta') & (df.by == 'human')], "artist", "length", "AI.Length(ms)")
+"""
+plot.general(df[df['type'] != 'vocal'], "length", "Length(ms)")
+plot.general(df[df['type'] == 'vocal'], "length", "Length(ms).V")
+
+plot.general(df[df['type'] != 'vocal'], "tempo", "Tempo(bpm)")
+plot.general(df[df['type'] == 'vocal'], "tempo", "Tempo(bpm).V")
+
+plot.general(df[df['type'] != 'vocal'], "loudness", "Loudness(db)")
+plot.general(df[df['type'] == 'vocal'], "loudness", "Loudness(db).V")
+
+plot.general(df[df['type'] != 'vocal'], "volume", "RMS")
+plot.general(df[df['type'] == 'vocal'], "volume", "RMS.V")
+
+plot.general(df[df['type'] != 'vocal'], "energy", "Energy")
+plot.general(df[df['type'] != 'vocal'], "energy", "Energy.V")
+
+plot.general(df[df['type'] != 'vocal'], "zero_crossing_rate_var", "Var of Zero Crossing Rate")
+plot.general(df[df['type'] != 'vocal'], "zero_crossing_rate_var", "Var of Zero Crossing Rate.V")
+
+plot.general(df[df['type'] != 'vocal'], "spectral_centroid_var", "Var of Spectral Centroid")
+plot.general(df[df['type'] == 'vocal'], "spectral_centroid_var", "Var of Spectral Centroid.V")
+
+plot.general(df[df['type'] != 'vocal'], "spectral_rolloff_var", "Var of Spectral Rolloff")
+plot.general(df[df['type'] == 'vocal'], "spectral_rolloff_var", "Var of Spectral Rolloff.V")
+
+plot.stack(df[(df['type'] != 'vocal')],'key','by','Key')
+plot.stack(df[(df['by'] == 'AI') & (df['type'] != 'vocal')],'key','artist','Key.AI')
+plot.stack(df[(df['by'] == 'human') & (df['type'] != 'vocal')],'key','artist','Key.Human')
+plot.stack(df[(df['type'] == 'vocal')],'key','by','Key')
+plot.stack(df[(df['by'] == 'AI') & (df['type'] == 'vocal')],'key','artist','Key.AI.V')
+plot.stack(df[(df['by'] == 'human') & (df['type'] == 'vocal')],'key','artist','Key.Human.V')
