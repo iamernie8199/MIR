@@ -11,7 +11,6 @@ from madmom.features.key import CNNKeyRecognitionProcessor, key_prediction_to_la
 from madmom.features.beats import RNNBeatProcessor
 from madmom.features.tempo import TempoEstimationProcessor
 import matplotlib.pyplot as plt
-import seaborn as sns
 import plot
 
 
@@ -22,14 +21,10 @@ def normalize(x, axis=0):
 # AI
 FILES = glob('AI/*/*/*.wav')
 FILES += glob('AI/*/*/*.mp3')
-"""
 # human
 FILES += glob('human/*/*/*.wav')
 FILES += glob('human/*/*/*.mp3')
-"""
 FILES = [f.replace('\\', '/') for f in FILES]
-
-vocal = ['ANIMA', 'French Kiwi Juice', 'In Rainbows', 'A Moon Shaped Pool']
 
 df = pd.DataFrame(columns=[
     'track', 'album', 'length', 'key', 'tempo', 'loudness', 'dynamic_range', 'volume', 'energy',
@@ -81,7 +76,8 @@ for f in tqdm(FILES):
         librosa.feature.rms(y, frame_length=1024, hop_length=512,
                             center=False))
     e = np.mean(np.sum(frame ** 2, axis=0))
-    if f.split('/')[1] == 'Auxuman' or f.split('/')[1] == 'Jukebox'or f.split('/')[2] in vocal :
+    if f.split('/')[1] == 'Auxuman' or f.split('/')[1] == 'Jukebox' or ((f.split('/')[0] == 'human') and (
+            f.split('/')[1] != 'Ryuichi Sakamoto') and (f.split('/')[1] != 'else')):
         type0 = 'vocal'
     elif f.split('/')[2] == '艾娲 (Vol. 3 from artificial composer Aiva)':
         type0 = 'china'
@@ -109,17 +105,11 @@ for f in tqdm(FILES):
         'artist': f.split('/')[1]
     }], ignore_index=True)
 
-df.to_csv('data.csv', index=0)
 data = df.copy()
+"""
+# %%
+plot.count(df)
 
-# length
-"""
-plot.violin(df[(df.artist != 'magenta')], "by", "length", "Length(ms)")
-ax = sns.violinplot(x=df[(df.artist != 'magenta') & (df.by == 'AI')]['length']).set_title('AI.all.Length(ms)')
-plt.show()
-plot.violin(df[(df.artist != 'magenta') & (df.by == 'AI')], "artist", "length", "AI.Length(ms)")
-plot.violin(df[(df.artist != 'magenta') & (df.by == 'human')], "artist", "length", "AI.Length(ms)")
-"""
 plot.general(df[df['type'] != 'vocal'], "length", "Length(ms)")
 plot.general(df[df['type'] == 'vocal'], "length", "Length(ms).V")
 
@@ -144,9 +134,25 @@ plot.general(df[df['type'] == 'vocal'], "spectral_centroid_var", "Var of Spectra
 plot.general(df[df['type'] != 'vocal'], "spectral_rolloff_var", "Var of Spectral Rolloff")
 plot.general(df[df['type'] == 'vocal'], "spectral_rolloff_var", "Var of Spectral Rolloff.V")
 
-plot.stack(df[(df['type'] != 'vocal')],'key','by','Key')
-plot.stack(df[(df['by'] == 'AI') & (df['type'] != 'vocal')],'key','artist','Key.AI')
-plot.stack(df[(df['by'] == 'human') & (df['type'] != 'vocal')],'key','artist','Key.Human')
-plot.stack(df[(df['type'] == 'vocal')],'key','by','Key')
-plot.stack(df[(df['by'] == 'AI') & (df['type'] == 'vocal')],'key','artist','Key.AI.V')
-plot.stack(df[(df['by'] == 'human') & (df['type'] == 'vocal')],'key','artist','Key.Human.V')
+plot.stack(df[(df['type'] != 'vocal')], 'key', 'by', 'Key')
+plot.stack(df[(df['by'] == 'AI') & (df['type'] != 'vocal')], 'key', 'artist', 'Key.AI')
+plot.stack(df[(df['by'] == 'human') & (df['type'] != 'vocal')], 'key', 'artist', 'Key.Human')
+plot.stack(df[(df['type'] == 'vocal')], 'key', 'by', 'Key')
+plot.stack(df[(df['by'] == 'AI') & (df['type'] == 'vocal')], 'key', 'artist', 'Key.AI.V')
+plot.stack(df[(df['by'] == 'human') & (df['type'] == 'vocal')], 'key', 'artist', 'Key.Human.V')
+
+features = ['length', 'tempo', 'loudness', 'dynamic_range', 'volume', 'energy',
+            'zero_crossing_rate_var', 'spectral_centroid_var', 'spectral_rolloff_var']
+music_features_df = df[df['by'] == 'AI'][features]
+music_features_norm_df = sklearn.preprocessing.minmax_scale(music_features_df)
+cov_matrix = music_features_df.cov()
+plot.lower_diag_matrix_plot(cov_matrix, 'Covariance Matrix.AI')
+corr_matrix = music_features_df.corr()
+plot.lower_diag_matrix_plot(corr_matrix, 'Correlation Matrix.AI')
+music_features_df = df[df['by'] == 'human'][features]
+music_features_norm_df = sklearn.preprocessing.minmax_scale(music_features_df)
+cov_matrix = music_features_df.cov()
+plot.lower_diag_matrix_plot(cov_matrix, 'Covariance Matrix.Human')
+corr_matrix = music_features_df.corr()
+plot.lower_diag_matrix_plot(corr_matrix, 'Correlation Matrix.Human')
+"""

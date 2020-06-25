@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import groupby
 import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from pywaffle import Waffle
 
 
 def stat(x):
@@ -17,11 +19,32 @@ def stat(x):
         '均值', '方差', '標準差', '偏度', '峰度', 'IQR'
     ])
 
+def count(df):
+    df_c = df.groupby('artist').size().reset_index(name='counts')
+    n_categories = df_c.shape[0]
+    colors = [plt.cm.tab20b(i / float(n_categories)) for i in range(n_categories)]
+    fig = plt.figure(
+        FigureClass=Waffle,
+        plots={
+            '111': {
+                'values': df_c['counts'],
+                'labels': ["{0} ({1})".format(n[0], n[1]) for n in df_c[['artist', 'counts']].itertuples()],
+                'legend': {'loc': 'best', 'bbox_to_anchor': (1, 1), 'fontsize': 18},
+                'title': {'label': 'Data', 'loc': 'center', 'fontsize': 30}
+            },
+        },
+        rows=df_c.shape[0],
+        colors=colors,
+        figsize=(27, 6)
+    )
+    plt.savefig('data_count.png')
+    plt.show()
+
 
 def violin(df, x, y, t):
     ax = sns.violinplot(x=x, y=y, data=df).set_title(t)
-    plt.show()
     plt.savefig(t+'.png')
+    plt.show()
 
 
 def convert(df):
@@ -56,12 +79,52 @@ def stack(df,x,g,t):
     plt.xlabel(x_var)
     plt.ylabel("Frequency")
     plt.xticks(ticks=bins, labels=np.unique(df[x_var]).tolist(), rotation=90, horizontalalignment='left')
-    plt.show()
     plt.savefig(t+'.png')
+    plt.show()
 
-if __name__ == "__main__":
-    data = pd.read_csv("data.csv")
-    data = convert(data)
-    violin(data, "artist", "length", "Length(ms)")
-    ax = sns.violinplot(x=data["tempo"]).set_title('tempo')
+
+def lower_diag_matrix_plot(matrix, title=None):
+    """ Args:
+        matrix - the full size symmetric matrix of any type that is lower diagonalized
+        title - title of the plot
+    """
+    plt.style.use('default')
+
+    # Create lower triangular matrix to mask the input matrix
+    triu = np.tri(len(matrix), k=0, dtype=bool) == False
+    matrix = matrix.mask(triu)
+    fig, ax = plt.subplots(figsize=(20, 20))
+    if title:
+        fig.suptitle(title, fontsize=32, verticalalignment='bottom')
+        fig.tight_layout()
+    plot = ax.matshow(matrix)
+
+    # Add grid lines to separate the points
+    # Adjust the ticks to create visually appealing grid/labels
+    # Puts minor ticks every half step and bases the grid off this
+    ax.set_xticks(np.arange(-0.5, len(matrix.columns), 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, len(matrix.columns), 1), minor=True)
+    ax.grid(which='minor', color='w', linestyle='-', linewidth=3)
+    # Puts major ticks every full step and bases the labels off this
+    ax.set_xticks(np.arange(0, len(matrix.columns), 1))
+    ax.set_yticks(np.arange(0, len(matrix.columns), 1))
+    plt.yticks(range(len(matrix.columns)), matrix.columns)
+    # Must put this here for x axis grid to show
+    plt.xticks(range(len(matrix.columns)))
+    ax.tick_params(axis='both', which='major', labelsize=24)
+    # Whitens (transparent) x labels
+    ax.tick_params(axis='x', colors=(0, 0, 0, 0))
+
+    # Add a colorbar for reference
+    cax = make_axes_locatable(ax)
+    cax = cax.append_axes("right", size="5%", pad=0.05)
+    cax.tick_params(axis='both', which='major', labelsize=24)
+    fig.colorbar(plot, cax=cax, cmap='hot')
+
+    # Get rid of borders of plot
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    plt.savefig(title+'.png')
     plt.show()
