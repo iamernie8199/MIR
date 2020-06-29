@@ -29,7 +29,7 @@ def count(df):
             '111': {
                 'values': df_c['counts'],
                 'labels': ["{0} ({1})".format(n[0], n[1]) for n in df_c[['artist', 'counts']].itertuples()],
-                'legend': {'loc': 'best', 'bbox_to_anchor': (1, 1), 'fontsize': 18},
+                'legend': {'loc': 'upper left', 'bbox_to_anchor': (1, 1), 'fontsize': 15},
                 'title': {'label': 'Data', 'loc': 'center', 'fontsize': 30}
             },
         },
